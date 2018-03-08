@@ -13,7 +13,7 @@ int getFieldPos(char * fieldName, char * header) {
     int count = 0;
     char * token = strtok(header,",");
     while(token != NULL) {
-        //printf("%s %s\n", token, fieldName);
+        printf("%s %s\n", token, fieldName);
         //printf("Compare: %d\n", strcmp(token, fieldName ));
         if( strcmp(token, fieldName ) == 0)
             pos = count;
@@ -39,8 +39,8 @@ int main(int argc, char ** argv) {
     }
     char line[1024];
     fgets(line, 1024, ofstream);
-    printf("%d\n", getFieldPos("Hello world", line));
+    printf("%d\n", getFieldPos("\"name\"", line));
 
-    printf("%s", "Hello World\n\0");
+    //printf("%s", "Hello World\n\0");
 
 }
