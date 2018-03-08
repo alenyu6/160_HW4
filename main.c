@@ -24,8 +24,15 @@ int getFieldPos(char * fieldName, char * header) {
 
 }
 
-int getField(int pos, char * line) {
-
+char * getField(int pos, char * line) {
+    int count = 0;
+    char * token = strtok(line, ",");
+    while(token != NULL) {
+        token = strtok(NULL, ",");
+        count++;
+        if(count == pos) return token;
+    }
+    return NULL;
 }
 
 int main(int argc, char ** argv) {
@@ -39,7 +46,11 @@ int main(int argc, char ** argv) {
     }
     char line[1024];
     fgets(line, 1024, ofstream);
-    printf("%d\n", getFieldPos("\"name\"", line));
+    int namePos = getFieldPos("\"name\"", line);
+    printf("%d\n", namePos);
+    while(fgets(line, 1024, ofstream)) {
+        printf("%s\n", getField(namePos, line));
+    }
 
     //printf("%s", "Hello World\n\0");
 
