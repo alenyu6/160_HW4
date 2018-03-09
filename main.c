@@ -2,12 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct Tweeter {
+typedef struct Tweeter {
     char * name;
     int tweetCount;
-};
+} Tweeter;
 
-int getFieldPos(char * fieldName, char * header) {
+int getFieldPos(char * fieldName, size_t length ,char * header) {
 
     int pos = -1;
     int count = 0;
@@ -35,59 +35,70 @@ char * getField(int pos, char * line) {
     return NULL;
 }
 
-void printMap(struct Tweeter* map, int tCount){
-  printf("\n - > map:\n");
-  for (int i = 0; i<tCount; i++){
-    printf("#%d: <%s,%d>\n", i, map[i].name, map[i].tweetCount);
-  }
-  printf("-----------------\n");
-}
+int findTweeter( Tweeter ** list, char * name, int size) {
 
-int add2Map(struct Tweeter* map, char* username, int twCount){
-  if (map == NULL) return -1;
-
-  for (int i = 0; i<twCount-1; i++){
-    if( strcmp(username, map[i].name ) == 0){
-        //printf(" -> match at %d, %s=%s\n", i, map[i].name, username);
-        map[i].tweetCount++;
-        //printf("adding=%d <%s,%d>\n", i, map[i].name, map[i].tweetCount);
-        return 1;
+    if( size <= 0 )
+        return -1;
+    size_t nameLen = strlen(name);
+    for(int i = 0; i < size; i++) {
+       Tweeter * t = list[i];
+       if( strncmp(name, t->name, nameLen) == 0 ) return i;
     }
-  }
-  map[twCount].name = strdup(username);
-  map[twCount].tweetCount = 1;
-  //printf("adding=%d <%s,%d>\n", twCount, map[twCount].name, map[twCount].tweetCount);
-  return 0;
+    return -1;
+
 }
 
+//Naive n^2 sort, file size not large enough to matter
+void sort(Tweeter *** list) {
 
+}
 
 int main(int argc, char ** argv) {
 
     char * fileName = argv[1];
     FILE * ofstream = fopen(fileName, "r");
 
-    struct Tweeter twVolume[20000];
-    int twCount = 0;
-
     if(ofstream == NULL) {
-        printf("File does not exist\n");
+        printf("File does not exist\n\0");
+        exit(0);
+    }
+    char line[1024];
+    fgets(line, 1024, ofstream);
+    char * field = "\"name\"";
+    int namePos = getFieldPos(field, strlen(field) ,line);
+    if(namePos < 0) {
+        printf("Invalid file format\n\0");
         exit(0);
     }
 
-    char line[1024];
-    fgets(line, 1024, ofstream);
-    int namePos = getFieldPos("\"name\"", line);
-    printf("usernames at pos %d\n", namePos);
+    int nextPos = 0;
+    Tweeter ** tweeterCount = (Tweeter **)(malloc(sizeof(Tweeter*)*6300));
 
+    printf("%d\n", namePos);
     while(fgets(line, 1024, ofstream)) {
-        //printf("%s\n", getField(namePos, line));
-        if (add2Map(twVolume, getField(namePos, line), twCount) == 0){
-          twCount++;
+        char * name = getField(namePos, line);
+        int found = findTweeter(tweeterCount, name, nextPos);
+        if(found >= 0) {
+            tweeterCount[found]->tweetCount++;
+        }
+        else{
+            Tweeter * tweeter = (Tweeter *)malloc(sizeof(Tweeter));
+            size_t nameLen = strlen(name);
+            tweeter->name = (char *)malloc( sizeof(char) * (nameLen+1) ); //Last char for null termination
+            strncpy(tweeter->name,name,nameLen); //safe version of strcpy, using size_t of name
+            tweeter->name[nameLen] = 0; //Need to properly terminate the string
+            tweeter->tweetCount = 1;
+            tweeterCount[nextPos++] = tweeter;
         }
     }
-    printMap(twVolume, twCount);
 
-    //printf("%s", "Hello World\n\0");
+    printf("%d\n", nextPos);
+
+    for( int i = 0; i < 10; i++ ) {
+        Tweeter * t = tweeterCount[i];
+        printf("%s : %d\n", t->name, t->tweetCount );
+    }
+
+    //Properly free memory after printing
 
 }
