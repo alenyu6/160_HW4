@@ -13,7 +13,7 @@ int getFieldPos(char * fieldName, char * header) {
     int count = 0;
     char * token = strtok(header,",");
     while(token != NULL) {
-        printf("%s %s\n", token, fieldName);
+        //printf("%s %s\n", token, fieldName);
         //printf("Compare: %d\n", strcmp(token, fieldName ));
         if( strcmp(token, fieldName ) == 0)
             pos = count;
@@ -47,10 +47,8 @@ int add2Map(struct Tweeter* map, char* username, int twCount){
   if (map == NULL) return -1;
 
   for (int i = 0; i<twCount-1; i++){
-    //printf("map[%d]: \n", i);
     if( strcmp(username, map[i].name ) == 0){
         //printf(" -> match at %d, %s=%s\n", i, map[i].name, username);
-        map[i].name = strdup(username);
         map[i].tweetCount++;
         //printf("adding=%d <%s,%d>\n", i, map[i].name, map[i].tweetCount);
         return 1;
@@ -59,7 +57,6 @@ int add2Map(struct Tweeter* map, char* username, int twCount){
   map[twCount].name = strdup(username);
   map[twCount].tweetCount = 1;
   //printf("adding=%d <%s,%d>\n", twCount, map[twCount].name, map[twCount].tweetCount);
-  //twCount++;
   return 0;
 }
 
@@ -74,14 +71,14 @@ int main(int argc, char ** argv) {
     int twCount = 0;
 
     if(ofstream == NULL) {
-        printf("File does not exist\n\0");
+        printf("File does not exist\n");
         exit(0);
     }
 
     char line[1024];
     fgets(line, 1024, ofstream);
     int namePos = getFieldPos("\"name\"", line);
-    printf("%d\n", namePos);
+    printf("usernames at pos %d\n", namePos);
 
     while(fgets(line, 1024, ofstream)) {
         //printf("%s\n", getField(namePos, line));
