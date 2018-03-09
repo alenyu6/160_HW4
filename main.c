@@ -2,11 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-<<<<<<< HEAD
 int MAX = 20000;
 
-=======
->>>>>>> 74b0beafbd725dd5b10de47684750cb51a7e7064
 typedef struct Tweeter {
     char * name;
     int tweetCount;
@@ -77,11 +74,7 @@ int main(int argc, char ** argv) {
     }
 
     int nextPos = 0;
-<<<<<<< HEAD
     Tweeter * tweeterCount[MAX];
-=======
-    Tweeter ** tweeterCount = (Tweeter **)(malloc(sizeof(Tweeter*)*6300));
->>>>>>> 74b0beafbd725dd5b10de47684750cb51a7e7064
 
     printf("%d\n", namePos);
     while(fgets(line, 1024, ofstream)) {
@@ -89,18 +82,6 @@ int main(int argc, char ** argv) {
         int found = findTweeter(tweeterCount, name, nextPos);
         if(found >= 0) {
             tweeterCount[found]->tweetCount++;
-<<<<<<< HEAD
-=======
-        }
-        else{
-            Tweeter * tweeter = (Tweeter *)malloc(sizeof(Tweeter));
-            size_t nameLen = strlen(name);
-            tweeter->name = (char *)malloc( sizeof(char) * (nameLen+1) ); //Last char for null termination
-            strncpy(tweeter->name,name,nameLen); //safe version of strcpy, using size_t of name
-            tweeter->name[nameLen] = 0; //Need to properly terminate the string
-            tweeter->tweetCount = 1;
-            tweeterCount[nextPos++] = tweeter;
->>>>>>> 74b0beafbd725dd5b10de47684750cb51a7e7064
         }
         else{
             Tweeter * tweeter = (Tweeter *)malloc(sizeof(Tweeter));
@@ -127,9 +108,6 @@ int main(int argc, char ** argv) {
         free(t); //free tweeter struct
     }
 
-<<<<<<< HEAD
-    printf("%s\n", "Finished");
-=======
     printf("%d\n", nextPos);
 
     for( int i = 0; i < 10; i++ ) {
@@ -138,6 +116,5 @@ int main(int argc, char ** argv) {
     }
 
     //Properly free memory after printing
->>>>>>> 74b0beafbd725dd5b10de47684750cb51a7e7064
 
 }
