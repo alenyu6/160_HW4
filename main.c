@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-int MAX = 20000;
+size_t MAX = 20000;
 
 typedef struct Tweeter {
     char * name;
@@ -17,7 +17,7 @@ int getFieldPos(char * fieldName, size_t length ,char * header) {
     while(token != NULL) {
         //printf("%s %s\n", token, fieldName);
         //printf("Compare: %d\n", strcmp(token, fieldName ));
-        if( strcmp(token, fieldName ) == 0)
+        if( strncmp(token, fieldName, length ) == 0)
             pos = count;
         token = strtok(NULL, ",");
         count++;
@@ -50,9 +50,16 @@ int findTweeter( Tweeter ** list, char * name, int size) {
 
 }
 
-//Naive n^2 sort, file size not large enough to matter
-void sort(Tweeter *** list) {
-
+void sort(Tweeter ** list, int size) {
+    for(int i = 1; i < size; i++){
+        for(int j = i; j > 0; j--){
+            if( list[j-1]->tweetCount > list[j]->tweetCount) {
+                Tweeter * toSwap = list[j-1];
+                list[j-1] = list[j];
+                list[j] = toSwap;
+            }
+        }
+    }
 }
 
 int main(int argc, char ** argv) {
@@ -74,7 +81,7 @@ int main(int argc, char ** argv) {
     }
 
     int nextPos = 0;
-    Tweeter * tweeterCount[MAX];
+    Tweeter ** tweeterCount = (Tweeter **)(malloc( sizeof(Tweeter *) * MAX ));
 
     printf("%d\n", namePos);
     while(fgets(line, 1024, ofstream)) {
@@ -96,7 +103,10 @@ int main(int argc, char ** argv) {
 
     printf("%d\n", nextPos);
 
-    for( int i = 0; i < 10; i++ ) {
+    //Insertion O(n^2) sort
+    sort(tweeterCount, nextPos);
+
+    for( int i = nextPos - 1; i >= nextPos - 10; i-- ) {
         Tweeter * t = tweeterCount[i];
         printf("%s : %d\n", t->name, t->tweetCount );
     }
@@ -108,13 +118,8 @@ int main(int argc, char ** argv) {
         free(t); //free tweeter struct
     }
 
-    printf("%d\n", nextPos);
+    free(tweeterCount); //free tweeter array
 
-    for( int i = 0; i < 10; i++ ) {
-        Tweeter * t = tweeterCount[i];
-        printf("%s : %d\n", t->name, t->tweetCount );
-    }
-
-    //Properly free memory after printing
+    printf("%s\n", "Finished");
 
 }
