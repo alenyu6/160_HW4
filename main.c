@@ -48,24 +48,24 @@ char * getField(int pos, char * line) {
     return NULL;
 }
 
-int findTweeter( Tweeter ** list, char * name, int size) {
+int findTweeter( Tweeter * list, char * name, int size) {
 
     if( size <= 0 )
         return -1;
     size_t nameLen = strlen(name);
     for(int i = 0; i < size; i++) {
-       Tweeter * t = list[i];
-       if( strncmp(name, t->name, nameLen) == 0 ) return i;
+       Tweeter t = list[i];
+       if( strncmp(name, t.name, nameLen) == 0 ) return i;
     }
     return -1;
 
 }
 
-void sort(Tweeter ** list, int size) {
+void sort(Tweeter * list, int size) {
     for(int i = 1; i < size; i++){
         for(int j = i; j > 0; j--){
-            if( list[j-1]->tweetCount < list[j]->tweetCount) {
-                Tweeter * toSwap = list[j-1];
+            if( list[j-1].tweetCount < list[j].tweetCount) {
+                Tweeter toSwap = list[j-1];
                 list[j-1] = list[j];
                 list[j] = toSwap;
             }
@@ -100,7 +100,7 @@ int main(int argc, char ** argv) {
 
     int nextPos = 0;
     unsigned int numLines = 1;
-    Tweeter * tweeterCount[MAX_TWEETERS];
+    Tweeter tweeterCount[MAX_TWEETERS];
 
     while( fgets(line, 1024 , ofstream) ) {
 
@@ -122,15 +122,15 @@ int main(int argc, char ** argv) {
 
         int found = findTweeter(tweeterCount, name, nextPos);
         if(found >= 0) {
-            tweeterCount[found]->tweetCount++;
+            tweeterCount[found].tweetCount++;
         }
         else{
-            Tweeter * tweeter = (Tweeter *)malloc(sizeof(Tweeter));
+            Tweeter tweeter;
             size_t nameLen = strlen(name);
-            tweeter->name = (char *)malloc( sizeof(char) * (nameLen+1) ); //Last char for null termination
-            strncpy(tweeter->name,name,nameLen); //safe version of strcpy, using size_t of name
-            tweeter->name[nameLen] = 0; //Need to properly terminate the string
-            tweeter->tweetCount = 1;
+            tweeter.name = (char *)malloc( sizeof(char) * (nameLen+1) ); //Last char for null termination
+            strncpy(tweeter.name,name,nameLen); //safe version of strcpy, using size_t of name
+            tweeter.name[nameLen] = 0; //Need to properly terminate the string
+            tweeter.tweetCount = 1;
             tweeterCount[nextPos++] = tweeter;
         }
         numLines++;
@@ -143,16 +143,15 @@ int main(int argc, char ** argv) {
         int printCount = (nextPos > 10) ? 10 : nextPos; //Limit to print 10
 
         for( int i = 0; i < printCount; i++ ) {
-            Tweeter * t = tweeterCount[i];
-            printf("%s : %d\n", t->name, t->tweetCount );
+            Tweeter t = tweeterCount[i];
+            printf("%s : %d\n", t.name, t.tweetCount );
         }
     }
 
     //Properly free memory after printing
     for( int i = 0; i < nextPos; i++) {
-        Tweeter * t = tweeterCount[i];
-        free(t->name); //free malloc'd mem for tweeter name;
-        free(t); //free tweeter struct
+        Tweeter t = tweeterCount[i];
+        free(t.name); //free malloc'd mem for tweeter name;
     }
 
     //printf("%s\n", "Finished");
