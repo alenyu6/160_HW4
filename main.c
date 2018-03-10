@@ -36,12 +36,12 @@ int getFieldPos(char * fieldName, size_t length ,char * header) {
 
 char * getField(int pos, char * line) {
     int count = 0;
-    char * token = strtok(line, ",");
+    char * token = strtok(line, ",\n");
     if( pos == 0 ) { //If field is first return token;
         return token;
     }
     while(token != NULL) {
-        token = strtok(NULL, ",");
+        token = strtok(NULL, ",\n");
         count++;
         if(count == pos) return token;
     }
@@ -108,14 +108,14 @@ int main(int argc, char ** argv) {
             printf("Invalid file format - Exceeded number of lines read\n");
             exit(0);
         }
-        if( strlen(line) > LINE_LENGTH ) {
+        if( line == NULL || strlen(line) > LINE_LENGTH ) {
             printf("Invalid file format - Exceeded line length\n");
             exit(0);
         }
 
         char * name = getField(namePos, line);
 
-        if( strlen(name) > LINE_LENGTH ) {
+        if( name == NULL || strlen(name) > LINE_LENGTH ) {
             printf("Invalid file format - Exceeded name length\n");
             exit(0);
         }
