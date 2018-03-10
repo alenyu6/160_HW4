@@ -108,7 +108,7 @@ int main(int argc, char ** argv) {
             printf("Invalid file format - Exceeded number of lines read\n");
             exit(0);
         }
-        if( line == NULL || strlen(line) > LINE_LENGTH ) {
+        if( strlen(line) > LINE_LENGTH ) {
             printf("Invalid file format - Exceeded line length\n");
             exit(0);
         }
