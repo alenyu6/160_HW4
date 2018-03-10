@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-size_t MAX = 20000;
+size_t MAX_LINES = 20000;
+size_t MAX_TWEETERS = 6300;
+size_t LINE_LENGTH = 375;
 
 typedef struct Tweeter {
     char * name;
@@ -13,13 +15,19 @@ int getFieldPos(char * fieldName, size_t length ,char * header) {
 
     int pos = -1;
     int count = 0;
-    char * token = strtok(header,",");
+    char * token = strtok(header,",\n"); //In case name is in last column
     while(token != NULL) {
-        //printf("%s %s\n", token, fieldName);
-        //printf("Compare: %d\n", strcmp(token, fieldName ));
-        if( strncmp(token, fieldName, length ) == 0)
-            pos = count;
-        token = strtok(NULL, ",");
+        char * trimmed;
+        int end = strlen(token)-1;
+        //Mutates string to remove quotes
+        if( token[0] == '"' && token[end] == '"' ) {
+            trimmed = token + 1;
+            trimmed[end - 1] = 0;
+        }
+        else trimmed = token;
+        if( strncmp(trimmed, fieldName, length ) == 0)
+            return count;
+        token = strtok(NULL, ",\n");
         count++;
     }
     return pos;
@@ -29,6 +37,9 @@ int getFieldPos(char * fieldName, size_t length ,char * header) {
 char * getField(int pos, char * line) {
     int count = 0;
     char * token = strtok(line, ",");
+    if( pos == 0 ) { //If field is first return token;
+        return token;
+    }
     while(token != NULL) {
         token = strtok(NULL, ",");
         count++;
@@ -53,7 +64,7 @@ int findTweeter( Tweeter ** list, char * name, int size) {
 void sort(Tweeter ** list, int size) {
     for(int i = 1; i < size; i++){
         for(int j = i; j > 0; j--){
-            if( list[j-1]->tweetCount > list[j]->tweetCount) {
+            if( list[j-1]->tweetCount < list[j]->tweetCount) {
                 Tweeter * toSwap = list[j-1];
                 list[j-1] = list[j];
                 list[j] = toSwap;
@@ -68,24 +79,47 @@ int main(int argc, char ** argv) {
     FILE * ofstream = fopen(fileName, "r");
 
     if(ofstream == NULL) {
-        printf("File does not exist\n\0");
+        printf("File does not exist\n");
         exit(0);
     }
+
     char line[1024];
     fgets(line, 1024, ofstream);
-    char * field = "\"name\"";
+
+    if( strlen(line) > LINE_LENGTH ) {
+        printf("Invalid file format - Exceeded line length\n");
+        exit(0);
+    }
+
+    char * field = "name";
     int namePos = getFieldPos(field, strlen(field) ,line);
     if(namePos < 0) {
-        printf("Invalid file format\n\0");
+        printf("Invalid file format\n");
         exit(0);
     }
 
     int nextPos = 0;
-    Tweeter ** tweeterCount = (Tweeter **)(malloc( sizeof(Tweeter *) * MAX ));
+    unsigned int numLines = 1;
+    Tweeter * tweeterCount[MAX_TWEETERS];
 
-    printf("%d\n", namePos);
-    while(fgets(line, 1024, ofstream)) {
+    while( fgets(line, 1024 , ofstream) ) {
+
+        if(numLines > MAX_LINES) {
+            printf("Invalid file format - Exceeded number of lines read\n");
+            exit(0);
+        }
+        if( strlen(line) > LINE_LENGTH ) {
+            printf("Invalid file format - Exceeded line length\n");
+            exit(0);
+        }
+
         char * name = getField(namePos, line);
+
+        if( strlen(name) > LINE_LENGTH ) {
+            printf("Invalid file format - Exceeded name length\n");
+            exit(0);
+        }
+
         int found = findTweeter(tweeterCount, name, nextPos);
         if(found >= 0) {
             tweeterCount[found]->tweetCount++;
@@ -99,16 +133,19 @@ int main(int argc, char ** argv) {
             tweeter->tweetCount = 1;
             tweeterCount[nextPos++] = tweeter;
         }
+        numLines++;
     }
 
-    printf("%d\n", nextPos);
-
     //Insertion O(n^2) sort
-    sort(tweeterCount, nextPos);
+    if(nextPos > 0) { //Header with no tweets
+        sort(tweeterCount, nextPos); 
 
-    for( int i = nextPos - 1; i >= nextPos - 10; i-- ) {
-        Tweeter * t = tweeterCount[i];
-        printf("%s : %d\n", t->name, t->tweetCount );
+        int printCount = (nextPos > 10) ? 10 : nextPos; //Limit to print 10
+
+        for( int i = 0; i < printCount; i++ ) {
+            Tweeter * t = tweeterCount[i];
+            printf("%s : %d\n", t->name, t->tweetCount );
+        }
     }
 
     //Properly free memory after printing
@@ -118,8 +155,6 @@ int main(int argc, char ** argv) {
         free(t); //free tweeter struct
     }
 
-    free(tweeterCount); //free tweeter array
-
-    printf("%s\n", "Finished");
+    //printf("%s\n", "Finished");
 
 }
